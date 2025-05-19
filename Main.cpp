@@ -1,54 +1,49 @@
 //
-// 2024.9.8¸üĞÂ 
+// 2024.9.8æ›´æ–° 
 // IDE:						VisualStudio2022 
-// C±ê×¼:					MSVC2015 
-// C++±ê×¼:					ISO C++14 
-// µ¼³öÉèÖÃ:					Release x86 
-// ×Ö·û±àÂë:					Unicode 
+// Cæ ‡å‡†:					MSVC2015 
+// C++æ ‡å‡†:					ISO C++14 
+// å¯¼å‡ºè®¾ç½®:					Release x86 
+// å­—ç¬¦ç¼–ç :					Unicode 
 // WindowsSDK:				10 
-// ±àÒëÔ¤´¦ÀíÆ÷¶¨Òå(VS2022):	WIN32
+// ç¼–è¯‘é¢„å¤„ç†å™¨å®šä¹‰(VS2022):	WIN32
 //							NDEBUG
 //							_WINDOWS
 //							_CRT_SECURE_NO_WARNINGS
 // 
-//							¡üÓÃMSVC(»òÕßVSµÄÎÊÌâ? DEVCPPÕæÃ»ÊÔ¹ı)²»Ìí¼ÓÕâ¸ö¾ÍÖ»ÄÜÊ¹ÓÃ_sµÄ°²È«°æº¯Êı
+//							â†‘ç”¨MSVC(æˆ–è€…VSçš„é—®é¢˜? DEVCPPçœŸæ²¡è¯•è¿‡)ä¸æ·»åŠ è¿™ä¸ªå°±åªèƒ½ä½¿ç”¨_sçš„å®‰å…¨ç‰ˆå‡½æ•°
 //
-#include <Windows.h> //Windows±ê×¼¿â
-#include <tlhelp32.h> //¹ÒÆğÏà¹Ø¿â
+#include <Windows.h> //Windowsæ ‡å‡†åº“
+#include <tlhelp32.h> //æŒ‚èµ·ç›¸å…³åº“
 #include <iostream>
 
-BOOL CK = FALSE; //½â¿ØÈ¡Ïû½â¿ØÇĞ»»
+BOOL CK = FALSE; //è§£æ§å–æ¶ˆè§£æ§åˆ‡æ¢
 
-//¸ü¸ÄWin¹«¹²¿Ø¼ş¿â°æ±¾ Ê¹ÓÃĞÂ°æ¿Ø¼ş Ô­ÀíÒ»Ñù ²»ÏñÁíÍâ¸ãmanifestÎÄ¼şÁË
+//æ›´æ”¹Winå…¬å…±æ§ä»¶åº“ç‰ˆæœ¬ ä½¿ç”¨æ–°ç‰ˆæ§ä»¶ åŸç†ä¸€æ · ä¸åƒå¦å¤–æmanifestæ–‡ä»¶äº†
 #pragma comment(linker,"\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-//¸ù¾İ³ÌĞòÃû³Æ½áÊø½ø³Ì¼°Æä×Ó½ø³ÌÎŞÊÓÏŞÖÆ Ô¼µÈÓÚÎŞÊÓÏŞÖÆµÄtaskkill /f /t /im 
-BOOL TerminateProcessAndChildren(const wchar_t* processName, UINT uExitCode)
-{
+//æ ¹æ®ç¨‹åºåç§°ç»“æŸè¿›ç¨‹åŠå…¶å­è¿›ç¨‹æ— è§†é™åˆ¶ çº¦ç­‰äºæ— è§†é™åˆ¶çš„taskkill /f /t /im 
+BOOL TerminateProcessAndChildren(const wchar_t* processName, UINT uExitCode) {
 	HANDLE hParentProcess = NULL;
-	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0); //´´½¨¿ìÕÕ
-	if (hSnapshot == INVALID_HANDLE_VALUE)
-	{
-		MessageBox(NULL, L"½áÊø½ø³ÌÊ±CreateToolhelp32SnapshotÊ§°Ü!", L"   ´íÎó±¨¸æ", MB_ICONERROR);  //´¦ÀíÊ§°Ü
+	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0); //åˆ›å»ºå¿«ç…§
+	if (hSnapshot == INVALID_HANDLE_VALUE) {
+		MessageBox(NULL, L"ç»“æŸè¿›ç¨‹æ—¶CreateToolhelp32Snapshotå¤±è´¥!", L"   é”™è¯¯æŠ¥å‘Š", MB_ICONERROR);  //å¤„ç†å¤±è´¥
 		return FALSE;
 	}
 
 	PROCESSENTRY32 pe32;
 	pe32.dwSize = sizeof(PROCESSENTRY32);
 
-	if (!Process32First(hSnapshot, &pe32)) 
-	{
-		MessageBox(NULL, L"½áÊø½ø³ÌÊ±Process32FirstÊ§°Ü!", L"   ´íÎó±¨¸æ", MB_ICONERROR);  //´¦ÀíÊ§°Ü
-		CloseHandle(hSnapshot); //¹Ø±Õ¾ä±ú
+	if (!Process32First(hSnapshot, &pe32)) {
+		MessageBox(NULL, L"ç»“æŸè¿›ç¨‹æ—¶Process32Firstå¤±è´¥!", L"   é”™è¯¯æŠ¥å‘Š", MB_ICONERROR);  //å¤„ç†å¤±è´¥
+		CloseHandle(hSnapshot); //å…³é—­å¥æŸ„
 		return FALSE;
 	}
-	//Ñ¡È¡½ø³Ì
-	do
-	{
-		if (wcscmp(pe32.szExeFile, processName) == 0)
-		{
+	//é€‰å–è¿›ç¨‹
+	do {
+		if (wcscmp(pe32.szExeFile, processName) == 0) {
 			hParentProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pe32.th32ProcessID);  
 			break;
 		}
@@ -56,18 +51,16 @@ BOOL TerminateProcessAndChildren(const wchar_t* processName, UINT uExitCode)
 
 	CloseHandle(hSnapshot);
 
-	if (hParentProcess == NULL)
-	{
+	if (hParentProcess == NULL) {
 		return FALSE;
 	}
 
-	BOOL success = TRUE;  //Ç°ÆÚ´¦Àí½á¹û
+	BOOL success = TRUE;  //å‰æœŸå¤„ç†ç»“æœ
 
-	//²éÕÒÉ±ËÀ×Ó½ø³Ì
+	//æŸ¥æ‰¾æ€æ­»å­è¿›ç¨‹
 	HANDLE hChildSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0); 
-	if (hChildSnapshot == INVALID_HANDLE_VALUE)
-	{
-		MessageBox(NULL, L"½áÊø½ø³ÌÊ±CreateToolhelp32SnapshotÊ§°Ü!", L"   ´íÎó±¨¸æ", MB_ICONERROR); 
+	if (hChildSnapshot == INVALID_HANDLE_VALUE) {
+		MessageBox(NULL, L"ç»“æŸè¿›ç¨‹æ—¶CreateToolhelp32Snapshotå¤±è´¥!", L"   é”™è¯¯æŠ¥å‘Š", MB_ICONERROR); 
 		CloseHandle(hParentProcess);
 		return FALSE;
 	}
@@ -75,22 +68,18 @@ BOOL TerminateProcessAndChildren(const wchar_t* processName, UINT uExitCode)
 	PROCESSENTRY32 peChild32;
 	peChild32.dwSize = sizeof(PROCESSENTRY32);
 
-	if (!Process32First(hChildSnapshot, &peChild32))
-	{
-		MessageBox(NULL, L"½áÊø½ø³ÌÊ±Process32FirstÊ§°Ü!", L"   ´íÎó±¨¸æ", MB_ICONERROR);
+	if (!Process32First(hChildSnapshot, &peChild32)) {
+		MessageBox(NULL, L"ç»“æŸè¿›ç¨‹æ—¶Process32Firstå¤±è´¥!", L"   é”™è¯¯æŠ¥å‘Š", MB_ICONERROR);
 		CloseHandle(hChildSnapshot);
 		CloseHandle(hParentProcess);
 		return FALSE;
 	}
 	
-	//½áÊø¸¸½ø³ÌºÍ×Ó½ø³Ì
-	do
-	{
-		if (peChild32.th32ParentProcessID == pe32.th32ProcessID)
-		{
+	//ç»“æŸçˆ¶è¿›ç¨‹å’Œå­è¿›ç¨‹
+	do {
+		if (peChild32.th32ParentProcessID == pe32.th32ProcessID) {
 			HANDLE hChildProcess = OpenProcess(PROCESS_TERMINATE, FALSE, peChild32.th32ProcessID);
-			if (hChildProcess != NULL)
-			{
+			if (hChildProcess != NULL) {
 				TerminateProcess(hChildProcess, uExitCode);
 				CloseHandle(hChildProcess);
 			}
@@ -102,59 +91,46 @@ BOOL TerminateProcessAndChildren(const wchar_t* processName, UINT uExitCode)
 	TerminateProcess(hParentProcess, uExitCode);
 	CloseHandle(hParentProcess);
 
-	return success;  //·µ»Ø½á¹û
+	return success;  //è¿”å›ç»“æœ
 }
 
-//¸ù¾İ³ÌĞòÃû³Æ¹ÒÆğ³ÌĞò
-BOOL SuspendProcessByName(const wchar_t* processName, int ReSuKi)
-{
+//æ ¹æ®ç¨‹åºåç§°æŒ‚èµ·ç¨‹åº
+BOOL SuspendProcessByName(const wchar_t* processName, int ReSuKi) {
 	HANDLE hProcessSnap;
 	PROCESSENTRY32 pe32;
 
 	hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (hProcessSnap == INVALID_HANDLE_VALUE)
-	{
-		MessageBox(NULL, L"¹ÒÆğ½ø³ÌÊ±CreateToolhelp32SnapshotÊ§°Ü!", L"   ´íÎó±¨¸æ", MB_ICONERROR);
+	if (hProcessSnap == INVALID_HANDLE_VALUE) {
+		MessageBox(NULL, L"æŒ‚èµ·è¿›ç¨‹æ—¶CreateToolhelp32Snapshotå¤±è´¥!", L"   é”™è¯¯æŠ¥å‘Š", MB_ICONERROR);
 		return false;
 	}
 
 	pe32.dwSize = sizeof(PROCESSENTRY32);
-	if (!Process32First(hProcessSnap, &pe32))
-	{
-		MessageBox(NULL, L"¹ÒÆğ½ø³ÌÊ±Process32FirstÊ§°Ü!", L"   ´íÎó±¨¸æ", MB_ICONERROR);
+	if (!Process32First(hProcessSnap, &pe32)) {
+		MessageBox(NULL, L"æŒ‚èµ·è¿›ç¨‹æ—¶Process32Firstå¤±è´¥!", L"   é”™è¯¯æŠ¥å‘Š", MB_ICONERROR);
 		CloseHandle(hProcessSnap);
 		return false;
 	}
 
 	bool success = false;
-	do
-	{
-		if (std::wstring(pe32.szExeFile) == processName)
-		{
+	do {
+		if (std::wstring(pe32.szExeFile) == processName) {
 			HANDLE hProcess = OpenProcess(PROCESS_TERMINATE | PROCESS_SUSPEND_RESUME, FALSE, pe32.th32ProcessID);
-			if (hProcess != NULL) 
-			{
-				if (ReSuKi != 1145)
-				{
+			if (hProcess != NULL)  {
+				if (ReSuKi != 1145) {
 					HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-					if (hThreadSnap != INVALID_HANDLE_VALUE)
-					{
+					if (hThreadSnap != INVALID_HANDLE_VALUE) {
 						THREADENTRY32 te32;
 						te32.dwSize = sizeof(THREADENTRY32);
-						if (Thread32First(hThreadSnap, &te32))
-						{
-							do
-							{
-								if (te32.th32OwnerProcessID == pe32.th32ProcessID)
-								{
+						if (Thread32First(hThreadSnap, &te32)) {
+							do {
+								if (te32.th32OwnerProcessID == pe32.th32ProcessID) {
 									HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, FALSE, te32.th32ThreadID);
-									if (hThread != NULL)
-									{
+									if (hThread != NULL) {
 										if (ReSuKi == 1) {
 											SuspendThread(hThread);
 										}
-										else if (ReSuKi == 2)
-										{
+										else if (ReSuKi == 2) {
 											ResumeThread(hThread);
 										}
 										CloseHandle(hThread);
@@ -179,13 +155,13 @@ BOOL SuspendProcessByName(const wchar_t* processName, int ReSuKi)
 	if (success == TRUE)
 	{
 		if (s == TRUE) {
-			MessageBox(NULL, L"ÒÑ¾­Í¨¹ı¹ÒÆğ»òÈ¡Ïû¹ÒÆğ¼«ÓòÖ÷½ø³ÌµÄ·½Ê½Íê³ÉÁË²Ù×÷!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, L"å·²ç»é€šè¿‡æŒ‚èµ·æˆ–å–æ¶ˆæŒ‚èµ·æåŸŸä¸»è¿›ç¨‹çš„æ–¹å¼å®Œæˆäº†æ“ä½œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 		}
 	}
 	else
 	{
 		if (s == TRUE) {
-			MessageBox(NULL, L"½â³ı¿ØÆÁ(¹ÒÆğ¼«Óò)Ê§°Ü! ¿ÉÄÜÊÇ¼«ÓòÖ÷½ø³ÌÎ´Æô¶¯!", L"   ´íÎó±¨¸æ", MB_OK | MB_ICONERROR);
+			MessageBox(NULL, L"è§£é™¤æ§å±(æŒ‚èµ·æåŸŸ)å¤±è´¥! å¯èƒ½æ˜¯æåŸŸä¸»è¿›ç¨‹æœªå¯åŠ¨!", L"   é”™è¯¯æŠ¥å‘Š", MB_OK | MB_ICONERROR);
 		}
 	}
 	*/
@@ -197,37 +173,37 @@ BOOL SuspendProcessByName(const wchar_t* processName, int ReSuKi)
 #define MAX_FILES 100
 #define MAX_PATH_LENGTH 260
 
-wchar_t exeFilesList[MAX_FILES][MAX_PATH_LENGTH + 10]; //Áô³ö²éÕÒÎÄ¼şµÄ³¤¶È
+wchar_t exeFilesList[MAX_FILES][MAX_PATH_LENGTH + 10]; //ç•™å‡ºæŸ¥æ‰¾æ–‡ä»¶çš„é•¿åº¦
 int fileCount = 0;
 
-void AddExeFileToList(const wchar_t* filePath) { //ÎÄ¼ş²éÕÒº¯Êı 
+void AddExeFileToList(const wchar_t* filePath) { //æ–‡ä»¶æŸ¥æ‰¾å‡½æ•° 
 	if (fileCount < MAX_FILES) {
 		const wchar_t* fileName = wcsrchr(filePath, L'\\');
 		if (fileName != NULL) {
-			fileName++; //ÒÆ¶¯µ½·´Ğ±¸ÜÖ®ºóµÄ×Ö·û£¨¼´ÎÄ¼şÃûµÄ¿ªÊ¼£©
+			fileName++; //ç§»åŠ¨åˆ°åæ–œæ ä¹‹åçš„å­—ç¬¦ï¼ˆå³æ–‡ä»¶åçš„å¼€å§‹ï¼‰
 		}
 		else {
-			fileName = (wchar_t*)filePath; //Èç¹ûÃ»ÓĞÕÒµ½·´Ğ±¸Ü£¬¼Ù¶¨Õû¸öÂ·¾¶¾ÍÊÇÒ»¸öÎÄ¼şÃû
+			fileName = (wchar_t*)filePath; //å¦‚æœæ²¡æœ‰æ‰¾åˆ°åæ–œæ ï¼Œå‡å®šæ•´ä¸ªè·¯å¾„å°±æ˜¯ä¸€ä¸ªæ–‡ä»¶å
 		}
 
-		//¹¹Ôì²éÕÒÎÄ¼şÃû×Ö·û´®
+		//æ„é€ æŸ¥æ‰¾æ–‡ä»¶åå­—ç¬¦ä¸²
 		swprintf(exeFilesList[fileCount], MAX_PATH_LENGTH + 9, L"%s", fileName);
 		fileCount++;
 	}
 }
 
-void TerminateZhushouProcess() { //É±ËÀ½ø³Ì
+void TerminateZhushouProcess() { //æ€æ­»è¿›ç¨‹
 	for (int i = 0; i < fileCount; i++) {
 		TerminateProcessAndChildren(exeFilesList[i], 0);
 	}
 }
 
-void SearchExeInFolder(const wchar_t* folderPath) {  //Ñ°ÕÒÎÄ¼ş¼ĞÄÚÎÄ¼ş
+void SearchExeInFolder(const wchar_t* folderPath) {  //å¯»æ‰¾æ–‡ä»¶å¤¹å†…æ–‡ä»¶
 	WIN32_FIND_DATAW ffd;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	wchar_t searchPath[MAX_PATH];
 
-	swprintf(searchPath, MAX_PATH, L"%s\\*", folderPath);  //Æ´½Ó×Ö·û´®
+	swprintf(searchPath, MAX_PATH, L"%s\\*", folderPath);  //æ‹¼æ¥å­—ç¬¦ä¸²
 	hFind = FindFirstFileW(searchPath, &ffd);
 	if (INVALID_HANDLE_VALUE == hFind) {
 		return;
@@ -235,12 +211,12 @@ void SearchExeInFolder(const wchar_t* folderPath) {  //Ñ°ÕÒÎÄ¼ş¼ĞÄÚÎÄ¼ş
 
 	do {
 		if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-			// ¼ì²éÎÄ¼şÀ©Õ¹ÃûÊÇ·ñÎª.exe
+			// æ£€æŸ¥æ–‡ä»¶æ‰©å±•åæ˜¯å¦ä¸º.exe
 			wchar_t* ext = wcsrchr(ffd.cFileName, L'.');
 			if (ext && _wcsicmp(ext, L".exe") == 0) {
 				wchar_t fullPath[MAX_PATH];
 				swprintf(fullPath, MAX_PATH, L"%s\\%s", folderPath, ffd.cFileName);
-				AddExeFileToList(fullPath); //½«.exeÎÄ¼şÂ·¾¶Ìí¼Óµ½ÁĞ±íÖĞ
+				AddExeFileToList(fullPath); //å°†.exeæ–‡ä»¶è·¯å¾„æ·»åŠ åˆ°åˆ—è¡¨ä¸­
 			}
 		}
 	} while (FindNextFileW(hFind, &ffd) != 0);
@@ -248,7 +224,7 @@ void SearchExeInFolder(const wchar_t* folderPath) {  //Ñ°ÕÒÎÄ¼ş¼ĞÄÚÎÄ¼ş
 	FindClose(hFind);
 }
 
-void FindAndUpdateFolder(const wchar_t findexe[]) {  //²éÕÒ»ú·¿¹ÜÀíÖúÊÖ
+void FindAndUpdateFolder(const wchar_t findexe[]) {  //æŸ¥æ‰¾æœºæˆ¿ç®¡ç†åŠ©æ‰‹
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	wchar_t rootSearchPath[MAX_PATH] = L"C:\\*";
@@ -260,13 +236,13 @@ void FindAndUpdateFolder(const wchar_t findexe[]) {  //²éÕÒ»ú·¿¹ÜÀíÖúÊÖ
 
 	do {
 		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-			//Èç¹ûÊÇÎÄ¼ş¼Ğ£¬Ôò¼ì²éÊÇ·ñ°üº¬"¸üĞÂÆ÷.exe"
+			//å¦‚æœæ˜¯æ–‡ä»¶å¤¹ï¼Œåˆ™æ£€æŸ¥æ˜¯å¦åŒ…å«"æ›´æ–°å™¨.exe"
 			wchar_t folderPath[MAX_PATH];
 			swprintf(folderPath, MAX_PATH, findexe, ffd.cFileName);
 			WIN32_FIND_DATA tempFfd;
 			HANDLE tempFind = FindFirstFile(folderPath, &tempFfd);
 			if (tempFind != INVALID_HANDLE_VALUE) {
-				// ÕÒµ½ÁË°üº¬"¸üĞÂÆ÷.exe"µÄÎÄ¼ş¼Ğ£¬ÏÖÔÚ±éÀú¸ÃÎÄ¼ş¼ĞÏÂµÄËùÓĞ.exeÎÄ¼ş
+				// æ‰¾åˆ°äº†åŒ…å«"æ›´æ–°å™¨.exe"çš„æ–‡ä»¶å¤¹ï¼Œç°åœ¨éå†è¯¥æ–‡ä»¶å¤¹ä¸‹çš„æ‰€æœ‰.exeæ–‡ä»¶
 				FindClose(tempFind);
 				swprintf(folderPath, MAX_PATH, L"C:\\%s", ffd.cFileName);
 				SearchExeInFolder(folderPath);
@@ -278,23 +254,23 @@ void FindAndUpdateFolder(const wchar_t findexe[]) {  //²éÕÒ»ú·¿¹ÜÀíÖúÊÖ
 	FindClose(hFind);
 }
 
-void ProgramFilesJFGLZS(const wchar_t ProgramFilesPath[]) {  //´¦Àív9.9¸üĞÂµÄ±£»î»úÖÆ
+void ProgramFilesJFGLZS(const wchar_t ProgramFilesPath[]) {  //å¤„ç†v9.9æ›´æ–°çš„ä¿æ´»æœºåˆ¶
 
-	//v9.9¸üĞÂµÄ±£»î»úÖÆ »áÔÚProgram FilesÎÄ¼ş¼ĞÏÂ´´½¨Ëæ»úµÄÈı×ÖÓ¢ÎÄÎÄ¼ş¼Ğ ÀïÃæÓĞÒ»¸öËæ»úÃû³ÆµÄ±£»¤³ÌĞò ÕâÀïĞèÒª½øĞĞ´¦Àí
+	//v9.9æ›´æ–°çš„ä¿æ´»æœºåˆ¶ ä¼šåœ¨Program Filesæ–‡ä»¶å¤¹ä¸‹åˆ›å»ºéšæœºçš„ä¸‰å­—è‹±æ–‡æ–‡ä»¶å¤¹ é‡Œé¢æœ‰ä¸€ä¸ªéšæœºåç§°çš„ä¿æŠ¤ç¨‹åº è¿™é‡Œéœ€è¦è¿›è¡Œå¤„ç†
 
 	WIN32_FIND_DATAW findFileData;
 	HANDLE hFind;
 	wchar_t folderPath[MAX_PATH];
 	wchar_t searchPath[MAX_PATH];
-	wcscpy(folderPath, ProgramFilesPath); //Program Files ÎÄ¼ş¼ĞÂ·¾¶
+	wcscpy(folderPath, ProgramFilesPath); //Program Files æ–‡ä»¶å¤¹è·¯å¾„
 
-	// ´æ´¢ÎÄ¼şÃûµÄ¶şÎ¬Êı×é
-	wchar_t fileNames[100][MAX_PATH]; //×î¶à´æ´¢100¸öÎÄ¼şÃû£¬Ã¿¸öÎÄ¼şÃû×î¶à MAX_PATH ³¤¶È
+	// å­˜å‚¨æ–‡ä»¶åçš„äºŒç»´æ•°ç»„
+	wchar_t fileNames[100][MAX_PATH]; //æœ€å¤šå­˜å‚¨100ä¸ªæ–‡ä»¶åï¼Œæ¯ä¸ªæ–‡ä»¶åæœ€å¤š MAX_PATH é•¿åº¦
 	int count = 0;
 
-	// ¹¹ÔìËÑË÷Â·¾¶
+	// æ„é€ æœç´¢è·¯å¾„
 	wcscpy(searchPath, folderPath);
-	wcscat(searchPath, L"\\???"); //Æ¥ÅäËùÓĞÈı¸ö×Ö·ûµÄÎÄ¼ş¼Ğ
+	wcscat(searchPath, L"\\???"); //åŒ¹é…æ‰€æœ‰ä¸‰ä¸ªå­—ç¬¦çš„æ–‡ä»¶å¤¹
 
 	hFind = FindFirstFileW(searchPath, &findFileData);
 
@@ -302,7 +278,7 @@ void ProgramFilesJFGLZS(const wchar_t ProgramFilesPath[]) {  //´¦Àív9.9¸üĞÂµÄ±£»
 		do {
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
 				&& wcslen(findFileData.cFileName) == 3) {
-				//Èç¹ûÊÇÎÄ¼ş¼ĞÇÒÎÄ¼ş¼ĞÃû³¤¶ÈÎª3£¬Ôò½øÈëÎÄ¼ş¼Ğ¼ÌĞøËÑË÷
+				//å¦‚æœæ˜¯æ–‡ä»¶å¤¹ä¸”æ–‡ä»¶å¤¹åé•¿åº¦ä¸º3ï¼Œåˆ™è¿›å…¥æ–‡ä»¶å¤¹ç»§ç»­æœç´¢
 				wcscpy(searchPath, folderPath);
 				wcscat(searchPath, L"\\");
 				wcscat(searchPath, findFileData.cFileName);
@@ -314,7 +290,7 @@ void ProgramFilesJFGLZS(const wchar_t ProgramFilesPath[]) {  //´¦Àív9.9¸üĞÂµÄ±£»
 						if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 							wcscpy(fileNames[count], findFileData.cFileName);
 							count++;
-							// È·±£²»³¬³öÊı×é·¶Î§
+							// ç¡®ä¿ä¸è¶…å‡ºæ•°ç»„èŒƒå›´
 							if (count >= 100) {
 								break;
 							}
@@ -326,7 +302,7 @@ void ProgramFilesJFGLZS(const wchar_t ProgramFilesPath[]) {  //´¦Àív9.9¸üĞÂµÄ±£»
 		} while (FindNextFileW(hFind, &findFileData) != 0);
 		FindClose(hFind);
 
-		//É±ËÀËùÓĞ±£»¤³ÌĞò
+		//æ€æ­»æ‰€æœ‰ä¿æŠ¤ç¨‹åº
 		for (int i = 0; i < count; i++) {
 			TerminateProcessAndChildren(fileNames[i], 0);
 		}
@@ -345,17 +321,17 @@ void ProgramFilesJFGLZS(const wchar_t ProgramFilesPath[]) {  //´¦Àív9.9¸üĞÂµÄ±£»
 #define MsgBtnDownloadCS16 9
 #define MsgBtnStopJY 11
 
-HANDLE hToken, hFinalToken; //Ä¿Ç°²»Ê¹ÓÃ ÎªÁËÇÔÈ¡winlogon.exeµÄÁîÅÆÈÃ³ÌĞòÒÔSystemÈ¨ÏŞÆô¶¯ÊµÏÖÔÚWindows8¼°ÒÔÉÏµÄ´°¿Ú³¬¼¶ÖÃ¶¥
-//´´½¨´°¿Ú¾ä±ú
+HANDLE hToken, hFinalToken; //ç›®å‰ä¸ä½¿ç”¨ ä¸ºäº†çªƒå–winlogon.exeçš„ä»¤ç‰Œè®©ç¨‹åºä»¥Systemæƒé™å¯åŠ¨å®ç°åœ¨Windows8åŠä»¥ä¸Šçš„çª—å£è¶…çº§ç½®é¡¶
+//åˆ›å»ºçª—å£å¥æŸ„
 HWND hWnd, hButtonSuspendJY, hButtonFixInternet, hButtonStopXSJFGLZS, hButtonStartRes, hButtonStartCMD, hButtonStartCS16, hButtonDownloadPVZ, hButtonStopJY, hGroupBoxKZ, hGroupBoxXZ, hGroupBoxKJ;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {  //Win32Ö÷³ÌĞòÈë¿Ú
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow) {  //Win32ä¸»ç¨‹åºå…¥å£
 
-	TCHAR szAppname[] = L"2024.7×îºóĞŞ¸Ä 25.5.20±àÒë By:Mwz4662";
+	TCHAR szAppname[] = L"2024.7æœ€åä¿®æ”¹ 25.5.20ç¼–è¯‘ By:Mwz4662";
 	MSG msg;
-	WNDCLASS wndclass = {};  //´´½¨´°¿ÚÀà
-	wndclass.style = CS_HREDRAW | CS_VREDRAW; // ĞŞ¸Ä¸³ÖµÔËËã·û
+	WNDCLASS wndclass = {};  //åˆ›å»ºçª—å£ç±»
+	wndclass.style = CS_HREDRAW | CS_VREDRAW; // ä¿®æ”¹èµ‹å€¼è¿ç®—ç¬¦
 	wndclass.lpfnWndProc = WndProc;
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
@@ -365,55 +341,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 	wndclass.hbrBackground = (HBRUSH)(GetStockObject(WHITE_BRUSH));
 	wndclass.lpszClassName = szAppname;
 
-	if (!RegisterClass(&wndclass)) {  //×¢²á´°¿ÚÀà²¢´¦Àí´íÎó
+	if (!RegisterClass(&wndclass)) {  //æ³¨å†Œçª—å£ç±»å¹¶å¤„ç†é”™è¯¯
 		MessageBox(NULL, L"Error", szAppname, MB_ICONERROR | MB_OK | MB_ICONINFORMATION);
 	}
 
-	//´´½¨Ö÷´°¿Ú
+	//åˆ›å»ºä¸»çª—å£
 	hWnd = CreateWindow(szAppname, szAppname,
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		465, 215,
 		NULL, NULL, hInstance, NULL);
 
-	//´´½¨×Ó¿Ø¼ş
+	//åˆ›å»ºå­æ§ä»¶
 	hGroupBoxKZ = CreateWindow(
-		L"BUTTON", L"¿ØÖÆ½â³ı", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_GROUPBOX, 10, 10, 250, 95, hWnd, NULL, hInstance, NULL
+		L"BUTTON", L"æ§åˆ¶è§£é™¤", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_GROUPBOX, 10, 10, 250, 95, hWnd, NULL, hInstance, NULL
 	);
 	hGroupBoxXZ = CreateWindow(
-		L"BUTTON", L"ÏŞÖÆ½â³ı", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_GROUPBOX, 270, 10, 175, 95, hWnd, NULL, hInstance, NULL
+		L"BUTTON", L"é™åˆ¶è§£é™¤", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_GROUPBOX, 270, 10, 175, 95, hWnd, NULL, hInstance, NULL
 	);
 	hGroupBoxKJ = CreateWindow(
-		L"BUTTON", L"¿ì½İ·½Ê½", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_GROUPBOX, 10, 110, 435, 60, hWnd, NULL, hInstance, NULL
+		L"BUTTON", L"å¿«æ·æ–¹å¼", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_GROUPBOX, 10, 110, 435, 60, hWnd, NULL, hInstance, NULL
 	);
 
 	hButtonStopJY = CreateWindow(
-		L"BUTTON", L"Ç¿É±¼«Óò(ÏÈÉ±ÖúÊÖ)", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 20, 30, 145, 30, hWnd, (HMENU)MsgBtnStopJY, hInstance, NULL
+		L"BUTTON", L"å¼ºæ€æåŸŸ(å…ˆæ€åŠ©æ‰‹)", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 20, 30, 145, 30, hWnd, (HMENU)MsgBtnStopJY, hInstance, NULL
 	);
 	hButtonSuspendJY = CreateWindow(
-		L"BUTTON", L"½â³ı¿ØÆÁ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 170, 30, 80, 30, hWnd, (HMENU)MsgBtnSuspendJY, hInstance, NULL
+		L"BUTTON", L"è§£é™¤æ§å±", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 170, 30, 80, 30, hWnd, (HMENU)MsgBtnSuspendJY, hInstance, NULL
 	);
 	hButtonFixInternet = CreateWindow(
-		L"BUTTON", L"½â³ı¼«ÓòÍøÂçÏŞÖÆ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 280, 30, 155, 30, hWnd, (HMENU)MsgBtnFixInternet, hInstance, NULL
+		L"BUTTON", L"è§£é™¤æåŸŸç½‘ç»œé™åˆ¶", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 280, 30, 155, 30, hWnd, (HMENU)MsgBtnFixInternet, hInstance, NULL
 	);
 	hButtonStopXSJFGLZS = CreateWindow(
-		L"BUTTON", L"Ç¿ÖÆÉ±µôÑ§Éú»ú·¿¹ÜÀíÖúÊÖ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 20, 65, 230, 30, hWnd, (HMENU)MsgBtnStopSJFGLZS, hInstance, NULL
+		L"BUTTON", L"å¼ºåˆ¶æ€æ‰å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 20, 65, 230, 30, hWnd, (HMENU)MsgBtnStopSJFGLZS, hInstance, NULL
 	);
 	hButtonStartRes = CreateWindow(
-		L"BUTTON", L"×ÊÔ´¼àÊÓÆ÷", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 20, 130, 105, 30, hWnd, (HMENU)MsgBtnStartRes, hInstance, NULL
+		L"BUTTON", L"èµ„æºç›‘è§†å™¨", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 20, 130, 105, 30, hWnd, (HMENU)MsgBtnStartRes, hInstance, NULL
 	);
 	hButtonStartCMD = CreateWindow(
-		L"BUTTON", L"ÃüÁîÌáÊ¾·û", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 130, 130, 105, 30, hWnd, (HMENU)MsgBtnStartCmd, hInstance, NULL
+		L"BUTTON", L"å‘½ä»¤æç¤ºç¬¦", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 130, 130, 105, 30, hWnd, (HMENU)MsgBtnStartCmd, hInstance, NULL
 	);
 	hButtonDownloadPVZ = CreateWindow(
-		L"BUTTON", L"ÏÂÔØPVZ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 240, 130, 95, 30, hWnd, (HMENU)MsgBtnDownloadPVZ, hInstance, NULL
+		L"BUTTON", L"ä¸‹è½½PVZ", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 240, 130, 95, 30, hWnd, (HMENU)MsgBtnDownloadPVZ, hInstance, NULL
 	);
 	hButtonStartCS16 = CreateWindow(
-		L"BUTTON", L"ÏÂÔØCs1.6", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 340, 130, 95, 30, hWnd, (HMENU)MsgBtnDownloadCS16, hInstance, NULL
+		L"BUTTON", L"ä¸‹è½½Cs1.6", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, 340, 130, 95, 30, hWnd, (HMENU)MsgBtnDownloadCS16, hInstance, NULL
 	);
 
-	//¸ü¸Ä×Ó¿Ø¼ş×ÖÌå
-	HFONT hFont = CreateFont(19, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, GB2312_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Î¢ÈíÑÅºÚ");
+	//æ›´æ”¹å­æ§ä»¶å­—ä½“
+	HFONT hFont = CreateFont(19, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, GB2312_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"å¾®è½¯é›…é»‘");
 	SendMessage(hButtonSuspendJY, WM_SETFONT, (WPARAM)hFont, TRUE);
 	SendMessage(hButtonFixInternet, WM_SETFONT, (WPARAM)hFont, TRUE);
 	SendMessage(hButtonStopXSJFGLZS, WM_SETFONT, (WPARAM)hFont, TRUE);
@@ -428,96 +404,96 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 
 	ShowWindow(hWnd, iCmdShow);
 	UpdateWindow(hWnd);
-	while (GetMessage(&msg, NULL, 0, 0)) {  //Æô¶¯Ñ­»·
+	while (GetMessage(&msg, NULL, 0, 0)) {  //å¯åŠ¨å¾ªç¯
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 	return (int)msg.wParam;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {  //´°¿Ú´¦Àíº¯Êı
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {  //çª—å£å¤„ç†å‡½æ•°
 
 	switch (message) {
 	case WM_CREATE:
 		break;
-	case WM_COMMAND:  //½øĞĞ×Ó¿Ø¼ş´¦Àí
+	case WM_COMMAND:  //è¿›è¡Œå­æ§ä»¶å¤„ç†
 	{
 		switch (LOWORD(wParam)) {
 		case MsgBtnSuspendJY:
-			//½â¿Ø
+			//è§£æ§
 			if (CK == TRUE) {
-				if (MessageBox(NULL, L"´ËÑ¡Ïî½«½â³ı¶Ô¼«ÓòµÄ¹ÒÆğ\n³ı·Ç½ÌÊ¦¶Ë½â³ı¿ØÖÆ²»È»±¾³ÌĞòÒ²Ã»°ì·¨!\nÊÇ·ñ¼ÌĞø?", L"   ¾¯¸æ", MB_YESNO | MB_ICONWARNING) == IDYES) {
+				if (MessageBox(NULL, L"æ­¤é€‰é¡¹å°†è§£é™¤å¯¹æåŸŸçš„æŒ‚èµ·\né™¤éæ•™å¸ˆç«¯è§£é™¤æ§åˆ¶ä¸ç„¶æœ¬ç¨‹åºä¹Ÿæ²¡åŠæ³•!\næ˜¯å¦ç»§ç»­?", L"   è­¦å‘Š", MB_YESNO | MB_ICONWARNING) == IDYES) {
 					if (SuspendProcessByName(L"StudentMain.exe", 2) == TRUE) {
 						CK = FALSE;
-						SetWindowText(hButtonSuspendJY, L"½â³ı¿ØÆÁ");
-						MessageBox(NULL, L"ÒÑ¾­Í¨¹ı¹ÒÆğ»òÈ¡Ïû¹ÒÆğ¼«ÓòÖ÷½ø³ÌµÄ·½Ê½Íê³ÉÁË²Ù×÷!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+						SetWindowText(hButtonSuspendJY, L"è§£é™¤æ§å±");
+						MessageBox(NULL, L"å·²ç»é€šè¿‡æŒ‚èµ·æˆ–å–æ¶ˆæŒ‚èµ·æåŸŸä¸»è¿›ç¨‹çš„æ–¹å¼å®Œæˆäº†æ“ä½œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 					}
 				}
 				else {
-					MessageBox(NULL, L"ÄãÑ¡ÔñÁËÈ¡Ïû ²Ù×÷²¢Ã»ÓĞ±»Ö´ĞĞ!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+					MessageBox(NULL, L"ä½ é€‰æ‹©äº†å–æ¶ˆ æ“ä½œå¹¶æ²¡æœ‰è¢«æ‰§è¡Œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 				}
 			}
 			else {
 				if (SuspendProcessByName(L"StudentMain.exe", 1) == TRUE) {
-					SetWindowText(hButtonSuspendJY, L"»Ö¸´¿ØÆÁ");
+					SetWindowText(hButtonSuspendJY, L"æ¢å¤æ§å±");
 					CK = TRUE;
-					MessageBox(NULL, L"½â³ı¿ØÆÁ(¹ÒÆğ¼«Óò)Ê§°Ü! ¿ÉÄÜÊÇ¼«ÓòÖ÷½ø³ÌÎ´Æô¶¯!", L"   ´íÎó±¨¸æ", MB_OK | MB_ICONERROR);
+					MessageBox(NULL, L"è§£é™¤æ§å±(æŒ‚èµ·æåŸŸ)å¤±è´¥! å¯èƒ½æ˜¯æåŸŸä¸»è¿›ç¨‹æœªå¯åŠ¨!", L"   é”™è¯¯æŠ¥å‘Š", MB_OK | MB_ICONERROR);
 				}
 			}
 			break;
 		case MsgBtnFixInternet:
-			//½â³ı¼«ÓòÍøÂçÏŞÖÆ ¹Ø±ÕMasterHelperºÍgatesrvÔÙ½áÊøTDNetFilter·şÎñ
+			//è§£é™¤æåŸŸç½‘ç»œé™åˆ¶ å…³é—­MasterHelperå’Œgatesrvå†ç»“æŸTDNetFilteræœåŠ¡
 			TerminateProcessAndChildren(L"MasterHelper.exe", 0);
 			TerminateProcessAndChildren(L"GATESRV.exe", 0);
 			system("sc stop TDNetFilter");
-			MessageBox(NULL, L"ÒÑ¾­Í¨¹ı½áÊø¼«Óò¸¨Öú½ø³Ì¼°Ïà¹Ø·şÎñÇı¶¯µÄ·½Ê½Íê³ÉÁË²Ù×÷!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, L"å·²ç»é€šè¿‡ç»“æŸæåŸŸè¾…åŠ©è¿›ç¨‹åŠç›¸å…³æœåŠ¡é©±åŠ¨çš„æ–¹å¼å®Œæˆäº†æ“ä½œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 			break;
 		case MsgBtnStopSJFGLZS:
-			//É±ËÀÑ§Éú»ú·¿¹ÜÀíÖúÊÖ
-			FindAndUpdateFolder(L"C:\\%s\\¸üĞÂÆ÷.exe");
+			//æ€æ­»å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹
+			FindAndUpdateFolder(L"C:\\%s\\æ›´æ–°å™¨.exe");
 			TerminateZhushouProcess();
 			FindAndUpdateFolder(L"C:\\%s\\pfn.exe");
 			TerminateZhushouProcess();
 			ProgramFilesJFGLZS(L"C:\\Program Files (x86)");
 			ProgramFilesJFGLZS(L"C:\\Program Files");
-			MessageBox(NULL, L"ÒÑ¾­Í¨¹ıµİ¹é²éÕÒºÍ³ÌĞòÄÚÖÃ½ø³ÌÍË³öº¯ÊıÍê³ÉÁË²Ù×÷!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, L"å·²ç»é€šè¿‡é€’å½’æŸ¥æ‰¾å’Œç¨‹åºå†…ç½®è¿›ç¨‹é€€å‡ºå‡½æ•°å®Œæˆäº†æ“ä½œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 			break;
 		case MsgBtnStartCmd:
-			//Æô¶¯CMD
+			//å¯åŠ¨CMD
 			system("start %WinDir%\\System32\\cmd.exe /k cd %WinDir%");
 			break;
 		case MsgBtnStartRes:
-			//ÈÎÎñ¹ÜÀíÆ÷±»½ûÓÃ Ê¹ÓÃ×ÊÔ´¼àÊÓÆ÷´úÌæ
-			if (MessageBox(NULL, L"×ÊÔ´¼àÊÓÆ÷±»Ñ§Éú»ú·¿¹ÜÀíÖúÊÖ±ê¼ÇÎª\"»áÍşĞ²µç×Ó½ÌÊÒÔËĞĞµÄ³ÌĞò\"\nÇëÒ»¶¨È·±£ÄãÒÑ¾­ÔËĞĞ¹ıÁË\"¹Ø±ÕÑ§Éú»ú·¿¹ÜÀíÖúÊÖ\"\n·ñÔòµçÄÔ½«»á±»Ñ§Éú»ú·¿¹ÜÀíÖúÊÖËø¶¨!\nÊÇ·ñ¼ÌĞø?", L"   ¾¯¸æ", MB_YESNO | MB_ICONWARNING) == IDYES) {
+			//ä»»åŠ¡ç®¡ç†å™¨è¢«ç¦ç”¨ ä½¿ç”¨èµ„æºç›‘è§†å™¨ä»£æ›¿
+			if (MessageBox(NULL, L"èµ„æºç›‘è§†å™¨è¢«å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹æ ‡è®°ä¸º\"ä¼šå¨èƒç”µå­æ•™å®¤è¿è¡Œçš„ç¨‹åº\"\nè¯·ä¸€å®šç¡®ä¿ä½ å·²ç»è¿è¡Œè¿‡äº†\"å…³é—­å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹\"\nå¦åˆ™ç”µè„‘å°†ä¼šè¢«å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹é”å®š!\næ˜¯å¦ç»§ç»­?", L"   è­¦å‘Š", MB_YESNO | MB_ICONWARNING) == IDYES) {
 				system("start %WinDir%\\System32\\perfmon.exe /res");
 			}
 			else {
-				MessageBox(NULL, L"ÄãÑ¡ÔñÁËÈ¡Ïû ²Ù×÷²¢Ã»ÓĞ±»Ö´ĞĞ!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+				MessageBox(NULL, L"ä½ é€‰æ‹©äº†å–æ¶ˆ æ“ä½œå¹¶æ²¡æœ‰è¢«æ‰§è¡Œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 			}
 			break;
 		case MsgBtnDownloadCS16:
-			//¿ì½İÏÂÔØCS1.6
+			//å¿«æ·ä¸‹è½½CS1.6
 			system("start https://cs16.info/cn/");
-			MessageBox(NULL, L"¹ØÓÚCSµÄÌáÊ¾:\n´ò¿ªÍøÒ³ºóÖ±½ÓÑ¡ÔñÏÂÔØ µ¯³ö´°¿ÚÀïÑ¡Ôñ±£´æ\nÇĞ¼Ç! Ò»¶¨²»Òª°Ñä¯ÀÀÆ÷¹ÒºóÌ¨(¿ÉÒÔ¹ØÍøÒ³)\n·ñÔòÏÂÔØËÙ¶È»á¿³°ë»òÕß0KB/s\n\nCs1.6¾ÖÓòÍøÁª»ú·½·¨\n·¿Ö÷´ò¿ªÃüÁîÌáÊ¾·û ÊäÈëipconfig »Ø³µ\nÔÚµ¯³öµÄÎÄ×ÖÖĞÕÒµ½\"IPV4µØÖ·\"¼Ç×¡ºóÃæµÄÒ»´®×Ö·û\n·¿Ö÷´ò¿ªCs1.6 Ñ¡ÔñÖ÷²Ëµ¥µÄNew Game µãMapÑ¡ÔñµØÍ¼\n\n·¿Ö÷ÉèÖÃ\n±ÈÈçde_dust2¾ÍÊÇÉ³¶ş de_inferno¾ÍÊÇĞ¡Õò\n²»ĞèÒªÈË»ú¾Í°ÑInclude...µÄ¹´È¡Ïûµô\n¹Ø±Õ¶ÓÓÑÉËº¦ µã»÷GameÑ¡Ïî¿¨°ÑFriendly FireµÄ¹´È¡Ïûµô\n·ÀÖ¹¿úÆÁ µã»÷GameÑ¡Ïî¿¨ ÕÒµ½Death Camera... Ñ¡ÔñOnly First...\n\nÍæ¼Ò¶Ë:°´¼üÅÌµÄ~ ÔÚµ¯³öµÄ´°¿ÚÀïÊäÈë\"connect ÄãµÃµ½µÄ·¿Ö÷IPV4µØÖ·\"\n×îºó»Ø³µ¾Í½øÈ¥ÁË", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, L"å…³äºCSçš„æç¤º:\næ‰“å¼€ç½‘é¡µåç›´æ¥é€‰æ‹©ä¸‹è½½ å¼¹å‡ºçª—å£é‡Œé€‰æ‹©ä¿å­˜\nåˆ‡è®°! ä¸€å®šä¸è¦æŠŠæµè§ˆå™¨æŒ‚åå°(å¯ä»¥å…³ç½‘é¡µ)\nå¦åˆ™ä¸‹è½½é€Ÿåº¦ä¼šç åŠæˆ–è€…0KB/s\n\nCs1.6å±€åŸŸç½‘è”æœºæ–¹æ³•\næˆ¿ä¸»æ‰“å¼€å‘½ä»¤æç¤ºç¬¦ è¾“å…¥ipconfig å›è½¦\nåœ¨å¼¹å‡ºçš„æ–‡å­—ä¸­æ‰¾åˆ°\"IPV4åœ°å€\"è®°ä½åé¢çš„ä¸€ä¸²å­—ç¬¦\næˆ¿ä¸»æ‰“å¼€Cs1.6 é€‰æ‹©ä¸»èœå•çš„New Game ç‚¹Mapé€‰æ‹©åœ°å›¾\n\næˆ¿ä¸»è®¾ç½®\næ¯”å¦‚de_dust2å°±æ˜¯æ²™äºŒ de_infernoå°±æ˜¯å°é•‡\nä¸éœ€è¦äººæœºå°±æŠŠInclude...çš„å‹¾å–æ¶ˆæ‰\nå…³é—­é˜Ÿå‹ä¼¤å®³ ç‚¹å‡»Gameé€‰é¡¹å¡æŠŠFriendly Fireçš„å‹¾å–æ¶ˆæ‰\né˜²æ­¢çª¥å± ç‚¹å‡»Gameé€‰é¡¹å¡ æ‰¾åˆ°Death Camera... é€‰æ‹©Only First...\n\nç©å®¶ç«¯:æŒ‰é”®ç›˜çš„~ åœ¨å¼¹å‡ºçš„çª—å£é‡Œè¾“å…¥\"connect ä½ å¾—åˆ°çš„æˆ¿ä¸»IPV4åœ°å€\"\næœ€åå›è½¦å°±è¿›å»äº†", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 			break;
 		case MsgBtnDownloadPVZ:
-			//¿ì½İÏÂÔØPVZ
+			//å¿«æ·ä¸‹è½½PVZ
 			system("start https://pvz.lanzoux.com/iau42bc");
-			MessageBox(NULL, L"Ö±½ÓÏÂÔØ´ò¿ª Ñ¡Ôñä¯ÀÀ(W) Ö±½ÓÑ¡Ôñ×ÀÃæ È·¶¨ °²×°\nÕÒµ½×ÀÃæÉÏµÄPlatsVs...ÎÄ¼ş¼Ğ ´ò¿ª ÔÙ´ò¿ªÎÄ¼ş¼ĞÀïµÄPlantVs...", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+			MessageBox(NULL, L"ç›´æ¥ä¸‹è½½æ‰“å¼€ é€‰æ‹©æµè§ˆ(W) ç›´æ¥é€‰æ‹©æ¡Œé¢ ç¡®å®š å®‰è£…\næ‰¾åˆ°æ¡Œé¢ä¸Šçš„PlatsVs...æ–‡ä»¶å¤¹ æ‰“å¼€ å†æ‰“å¼€æ–‡ä»¶å¤¹é‡Œçš„PlantVs...", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 			break;
 		case MsgBtnStopJY:
-			//É±ËÀ¼«Óò
-			//2024.10.3¸üĞÂ ĞèÒªÖØ¸´É±ËÀ ÒòÎªÔ¶³Ì½â¿ØÄ¿Ç°ÒÑ¾­¸üĞÂ ÕâÀï²»×ö¸üĞÂ
-			if (MessageBox(NULL, L"´ËÑ¡Ïî½«Ç¿ÖÆÉ±µô¼«Óò!\nÇëÒ»¶¨È·±£ÄãÒÑ¾­ÔËĞĞ¹ıÁË\"¹Ø±ÕÑ§Éú»ú·¿¹ÜÀíÖúÊÖ\"\n·ñÔòµçÄÔ½«»á±»Ñ§Éú»ú·¿¹ÜÀíÖúÊÖËø¶¨!\nÊÇ·ñ¼ÌĞø?", L"   ¾¯¸æ", MB_YESNO | MB_ICONWARNING) == IDYES) {
+			//æ€æ­»æåŸŸ
+			//2024.10.3æ›´æ–° éœ€è¦é‡å¤æ€æ­» å› ä¸ºè¿œç¨‹è§£æ§ç›®å‰å·²ç»æ›´æ–° è¿™é‡Œä¸åšæ›´æ–°
+			if (MessageBox(NULL, L"æ­¤é€‰é¡¹å°†å¼ºåˆ¶æ€æ‰æåŸŸ!\nè¯·ä¸€å®šç¡®ä¿ä½ å·²ç»è¿è¡Œè¿‡äº†\"å…³é—­å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹\"\nå¦åˆ™ç”µè„‘å°†ä¼šè¢«å­¦ç”Ÿæœºæˆ¿ç®¡ç†åŠ©æ‰‹é”å®š!\næ˜¯å¦ç»§ç»­?", L"   è­¦å‘Š", MB_YESNO | MB_ICONWARNING) == IDYES) {
 				if (TerminateProcessAndChildren(L"StudentMain.exe", 0) == TRUE) {
-					MessageBox(NULL, L"ÒÑ¾­Í¨¹ı³ÌĞòÄÚÖÃ½ø³ÌÍË³öº¯ÊıÍê³ÉÁË²Ù×÷!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+					MessageBox(NULL, L"å·²ç»é€šè¿‡ç¨‹åºå†…ç½®è¿›ç¨‹é€€å‡ºå‡½æ•°å®Œæˆäº†æ“ä½œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 				}
 				else {
-					MessageBox(NULL, L"Ç¿ÖÆÉ±µô¼«ÓòÊ§°Ü! ¿ÉÄÜÊÇ¼«ÓòÖ÷½ø³ÌÎ´Æô¶¯!", L"   ´íÎó±¨¸æ", MB_OK | MB_ICONERROR);
+					MessageBox(NULL, L"å¼ºåˆ¶æ€æ‰æåŸŸå¤±è´¥! å¯èƒ½æ˜¯æåŸŸä¸»è¿›ç¨‹æœªå¯åŠ¨!", L"   é”™è¯¯æŠ¥å‘Š", MB_OK | MB_ICONERROR);
 				}
 			}
 			else {
-				MessageBox(NULL, L"ÄãÑ¡ÔñÁËÈ¡Ïû ²Ù×÷²¢Ã»ÓĞ±»Ö´ĞĞ!", L"   ÌáÊ¾", MB_OK | MB_ICONINFORMATION);
+				MessageBox(NULL, L"ä½ é€‰æ‹©äº†å–æ¶ˆ æ“ä½œå¹¶æ²¡æœ‰è¢«æ‰§è¡Œ!", L"   æç¤º", MB_OK | MB_ICONINFORMATION);
 			}
 		}
 		break;
